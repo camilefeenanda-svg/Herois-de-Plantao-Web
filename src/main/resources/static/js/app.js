@@ -4,7 +4,11 @@ const labels={painel:"Visão geral",pacientes:"Pacientes",medicos:"Médicos",con
 let view="painel";const $=s=>document.querySelector(s);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function notify(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3500)}
-async function request(url,options){const r=await fetch(url,options);let data;try{data=await r.json()}catch{data={}}if(!r.ok)throw new Error(data.detail||data.erro||data.message||`Erro HTTP ${r.status}`);return data}
+async function request(url,options){const r=await fetch(url,options);let data;try{data=await r.json()}catch{data={}}if(!r.ok)throw new Error(
+  r.status === 409
+    ? "Já existe uma consulta agendada para esse médico ou paciente neste horário."
+    : (data.detail || data.erro || data.message || `Erro HTTP ${r.status}`)
+);return data}
 async function carregar(){try{const tipos=Object.keys(db);const results=await Promise.all(tipos.map(t=>request('/api/'+t)));tipos.forEach((t,i)=>db[t]=results[i].map(x=>Object.fromEntries(Object.entries(x).map(([k,v])=>[k.toLowerCase(),v]))));render()}catch(e){notify('Servidor indisponível: '+e.message)}}
 const option=(items,fmt)=>items.map(x=>`<option value="${x.id}">${esc(fmt(x))}</option>`).join('');
 const field=(rotulo,nome,tipo='text',ob=true)=>`<label class="field">${rotulo}<input name="${nome}" type="${tipo}" ${ob?'required':''}></label>`;
