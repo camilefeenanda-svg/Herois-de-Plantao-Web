@@ -1,0 +1,6 @@
+target/
+dados/
+*.log
+nbproject/private/
+.idea/
+.vscode/
